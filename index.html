@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Historial Médico del Niño</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #4f46e5;
+  --primary-light: #eef2ff;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --white: #ffffff;
+}
+
+html, body { min-height: 100%; width: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #667eea;
+  background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 16px 16px 40px;
+}
+
+.container {
+  background: var(--white);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  overflow: hidden;
+  -webkit-box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+
+.header {
+  background: #4f46e5;
+  background: -webkit-linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  padding: 24px 20px 20px;
+}
+
+.header-icon {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.header h1 { font-size: 19px; font-weight: 700; margin-bottom: 3px; color: white; }
+.header p  { font-size: 13px; opacity: 0.85; color: white; }
+
+.progress-wrap { padding: 18px 20px 0; }
+
+.progress-info {
+  display: -webkit-flex; display: flex;
+  -webkit-justify-content: space-between; justify-content: space-between;
+  -webkit-align-items: center; align-items: center;
+  margin-bottom: 7px;
+}
+
+.progress-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.progress-count { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+.progress-track { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+
+.progress-fill {
+  height: 100%;
+  background: #4f46e5;
+  background: -webkit-linear-gradient(90deg, #4f46e5, #7c3aed);
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  border-radius: 99px;
+  -webkit-transition: width 0.4s ease;
+  transition: width 0.4s ease;
+}
+
+.question-area { padding: 24px 20px 20px; }
+
+.question-number {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 11px; font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.question-text {
+  font-size: 17px; font-weight: 600;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 20px;
+  min-height: 26px;
+  word-break: break-word;
+}
+
+.answer-box {
+  background: var(--bg);
+  border: 1.5px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-user-select: none; user-select: none;
+}
+
+.answer-box.filled {
+  border-style: solid;
+  border-color: var(--success);
+  background: var(--success-light);
+  color: #065f46;
+  font-weight: 500;
+}
+
+.answer-icon { font-size: 16px; flex-shrink: 0; -webkit-flex-shrink: 0; }
+.answer-text { flex: 1; -webkit-flex: 1; word-break: break-word; }
+
+.divider { height: 1px; background: var(--border); margin: 0 20px; }
+
+.btn-row {
+  padding: 16px 20px 24px;
+  display: -webkit-flex; display: flex;
+  gap: 10px;
+}
+
+.btn {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  border: none;
+  -webkit-appearance: none; appearance: none;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  font-family: inherit;
+  text-align: center;
+  flex: 1; -webkit-flex: 1;
+}
+
+.btn-primary { background: #4f46e5; color: white; }
+.btn-outline  { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+.btn-success  { background: #10b981; color: white; }
+.btn-copy     { background: #4f46e5; color: white; }
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 999;
+  -webkit-align-items: flex-end; align-items: flex-end;
+  -webkit-justify-content: center; justify-content: center;
+}
+
+.modal-overlay.open {
+  display: -webkit-flex; display: flex;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 640px;
+  padding-bottom: 20px;
+  -webkit-animation: slideUp 0.28s ease;
+  animation: slideUp 0.28s ease;
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@-webkit-keyframes slideUp {
+  from { opacity:0; -webkit-transform:translateY(30px); }
+  to   { opacity:1; -webkit-transform:translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  margin: 12px auto 0;
+}
+
+.modal-header {
+  padding: 16px 20px 0;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: flex-start; align-items: flex-start;
+  -webkit-justify-content: space-between; justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-header h2 {
+  font-size: 15px; font-weight: 600;
+  color: var(--text); line-height: 1.5;
+  flex: 1; -webkit-flex: 1;
+}
+
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+  flex-shrink: 0; -webkit-flex-shrink: 0;
+  -webkit-appearance: none; font-family: inherit;
+}
+
+.modal-body { padding: 14px 20px; }
+
+.modal-body label {
+  display: block;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.modal-body textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  background: var(--bg);
+  -webkit-appearance: none; appearance: none;
+  display: block;
+}
+
+.modal-hint { font-size: 12px; color: var(--text-muted); margin-top: 7px; }
+
+.modal-footer {
+  padding: 0 20px;
+  display: -webkit-flex; display: flex;
+  gap: 10px;
+}
+
+.summary-wrap { padding: 24px 20px 28px; }
+.summary-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.summary-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+.summary-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.summary-q {
+  font-size: 11px; font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.summary-question { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.summary-a { font-size: 14px; color: var(--text); line-height: 1.5; word-break: break-word; }
+.summary-a.empty { color: var(--text-muted); font-style: italic; }
+
+.summary-actions {
+  margin-top: 20px;
+  display: -webkit-flex; display: flex;
+  gap: 10px; -webkit-flex-wrap: wrap; flex-wrap: wrap;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  -webkit-transform: translateX(-50%) translateY(80px);
+  transform: translateX(-50%) translateY(80px);
+  background: #1f2937; color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  z-index: 9999;
+  white-space: nowrap;
+  opacity: 0;
+  -webkit-transition: all 0.3s ease; transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  -webkit-transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { background: #10b981; }
+.toast.error   { background: #ef4444; }
+
+#screen-summary { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div id="screen-quiz">
+    <div class="header">
+      <div class="header-icon">&#x1F3E5;</div>
+      <h1>Historial M&#xE9;dico del Ni&#xF1;o</h1>
+      <p>Responde cada pregunta con la mayor precisi&#xF3;n posible</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span class="progress-label">Progreso</span>
+        <span class="progress-count" id="progress-text">1 de 13</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:7.7%"></div>
+      </div>
+    </div>
+
+    <div class="question-area">
+      <div class="question-number" id="question-number">Pregunta 1</div>
+      <div class="question-text" id="question-text">Cargando...</div>
+      <div class="answer-box" id="answer-box">
+        <span class="answer-icon" id="answer-icon">&#x270F;&#xFE0F;</span>
+        <span class="answer-text" id="answer-text">Toca aqu&#xED; para escribir tu respuesta...</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" id="btn-back" style="display:none">&#8592; Anterior</button>
+      <button class="btn btn-primary" id="btn-next">Siguiente &#8594;</button>
+    </div>
+  </div>
+
+  <div id="screen-summary">
+    <div class="summary-wrap">
+      <div class="summary-title">&#x2705; Resumen completo</div>
+      <div class="summary-subtitle">Revisa tus respuestas. Puedes copiarlas para guardarlas o compartirlas.</div>
+      <div id="summary-list"></div>
+      <div class="summary-actions">
+        <button class="btn btn-outline" id="btn-restart">&#x21A9; Reiniciar</button>
+        <button class="btn btn-copy" id="btn-copy">&#x1F4CB; Copiar respuestas</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2 id="modal-q">Pregunta</h2>
+      <button class="modal-close" id="modal-close-btn">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <label>Tu respuesta</label>
+      <textarea id="modal-input" placeholder="Escribe aqui con detalle..."></textarea>
+      <p class="modal-hint">&#x1F4A1; Si no aplica, escribe "No" o "No aplica"</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="modal-cancel-btn">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn">&#x2714; Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var PREGUNTAS = [
+  "\xBFEl embarazo present\xF3 alguna complicaci\xF3n?",
+  "\xBFEl ni\xF1o naci\xF3 a t\xE9rmino o fue prematuro?",
+  "\xBFHubo alg\xFAn problema durante el parto o despu\xE9s de nacer?",
+  "\xBFA qu\xE9 edad comenz\xF3 a caminar y hablar?",
+  "\xBFHa padecido enfermedades importantes (asma, alergias, infecciones frecuentes)?",
+  "\xBFHa sido hospitalizado alguna vez?",
+  "\xBFTiene alguna condici\xF3n m\xE9dica diagnosticada?",
+  "\xBFEst\xE1 tomando alg\xFAn medicamento actualmente?",
+  "\xBFHa necesitado tratamientos m\xE9dicos prolongados?",
+  "\xBFTiene alergias a alg\xFAn alimento?",
+  "\xBFC\xF3mo es su patr\xF3n de sue\xF1o y cu\xE1ntas horas duerme al d\xEDa?",
+  "\xBFExisten enfermedades hereditarias en la familia?",
+  "\xBFTiene todas sus vacunas al d\xEDa?"
+];
+
+var STORAGE_KEY = "historial_medico_v2";
+var current = 0;
+var respuestas = {};
+
+try {
+  var s = localStorage.getItem(STORAGE_KEY);
+  if (s) respuestas = JSON.parse(s);
+} catch(e) {}
+
+function guardar() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(respuestas)); } catch(e) {}
+}
+
+function render() {
+  var total = PREGUNTAS.length;
+  var pct = Math.round((current + 1) / total * 100);
+
+  document.getElementById("question-number").textContent = "Pregunta " + (current + 1);
+  document.getElementById("question-text").textContent = PREGUNTAS[current];
+  document.getElementById("progress-text").textContent = (current + 1) + " de " + total;
+  document.getElementById("progress-fill").style.width = pct + "%";
+
+  var resp = respuestas[current];
+  var box  = document.getElementById("answer-box");
+  var icon = document.getElementById("answer-icon");
+  var txt  = document.getElementById("answer-text");
+
+  if (resp) {
+    box.className = "answer-box filled";
+    icon.textContent = "\u2705";
+    txt.textContent  = resp;
+  } else {
+    box.className = "answer-box";
+    icon.textContent = "\u270F\uFE0F";
+    txt.textContent  = "Toca aqu\xED para escribir tu respuesta...";
+  }
+
+  var btnBack = document.getElementById("btn-back");
+  var btnNext = document.getElementById("btn-next");
+
+  btnBack.style.display = (current === 0) ? "none" : "-webkit-flex";
+
+  if (current === total - 1) {
+    btnNext.textContent = "Ver resumen \u2713";
+    btnNext.className = "btn btn-success";
+  } else {
+    btnNext.textContent = "Siguiente \u2192";
+    btnNext.className = "btn btn-primary";
+  }
+}
+
+function abrirModal() {
+  document.getElementById("modal-q").textContent = PREGUNTAS[current];
+  document.getElementById("modal-input").value = respuestas[current] || "";
+  document.getElementById("modal").className = "modal-overlay open";
+  setTimeout(function() {
+    try { document.getElementById("modal-input").focus(); } catch(e) {}
+  }, 350);
+}
+
+function cerrarModal() {
+  document.getElementById("modal").className = "modal-overlay";
+}
+
+function guardarRespuesta() {
+  var val = document.getElementById("modal-input").value;
+  val = val.replace(/^\s+|\s+$/g, "");
+  if (!val) {
+    toast("Escribe una respuesta antes de continuar", "error");
+    return;
+  }
+  respuestas[current] = val;
+  guardar();
+  cerrarModal();
+  render();
+  toast("Respuesta guardada \u2705", "success");
+}
+
+function siguiente() {
+  if (current < PREGUNTAS.length - 1) {
+    current++;
+    render();
+    window.scrollTo(0, 0);
+  } else {
+    mostrarResumen();
+  }
+}
+
+function anterior() {
+  if (current > 0) {
+    current--;
+    render();
+    window.scrollTo(0, 0);
+  }
+}
+
+function mostrarResumen() {
+  document.getElementById("screen-quiz").style.display    = "none";
+  document.getElementById("screen-summary").style.display = "block";
+
+  var list = document.getElementById("summary-list");
+  list.innerHTML = "";
+
+  for (var i = 0; i < PREGUNTAS.length; i++) {
+    var r   = respuestas[i];
+    var div = document.createElement("div");
+    div.className = "summary-item";
+
+    var ql = document.createElement("div");
+    ql.className   = "summary-q";
+    ql.textContent = "Pregunta " + (i + 1);
+
+    var qt = document.createElement("div");
+    qt.className   = "summary-question";
+    qt.textContent = PREGUNTAS[i];
+
+    var at = document.createElement("div");
+    at.className   = r ? "summary-a" : "summary-a empty";
+    at.textContent = r || "Sin respuesta";
+
+    div.appendChild(ql);
+    div.appendChild(qt);
+    div.appendChild(at);
+    list.appendChild(div);
+  }
+  window.scrollTo(0, 0);
+}
+
+function reiniciar() {
+  if (!confirm("\xBFSeguro que deseas reiniciar? Se borrar\xE1n todas las respuestas.")) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  respuestas = {};
+  current    = 0;
+  document.getElementById("screen-quiz").style.display    = "block";
+  document.getElementById("screen-summary").style.display = "none";
+  render();
+  window.scrollTo(0, 0);
+}
+
+function copiarTexto() {
+  var txt = "HISTORIAL MEDICO DEL NINO\n";
+  txt += "Fecha: " + new Date().toLocaleString() + "\n";
+  txt += "================================\n\n";
+  for (var i = 0; i < PREGUNTAS.length; i++) {
+    txt += (i + 1) + ". " + PREGUNTAS[i] + "\n";
+    txt += "   " + (respuestas[i] || "Sin respuesta") + "\n\n";
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function() {
+      toast("Texto copiado al portapapeles \uD83D\uDCCB", "success");
+    }).catch(function() { copiarFallback(txt); });
+  } else {
+    copiarFallback(txt);
+  }
+}
+
+function copiarFallback(txt) {
+  var ta = document.createElement("textarea");
+  ta.value = txt;
+  ta.style.cssText = "position:fixed;top:0;left:0;opacity:0.01;width:1px;height:1px;";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand("copy"); toast("Texto copiado \uD83D\uDCCB", "success"); }
+  catch(e) { toast("No se pudo copiar autom\xE1ticamente", "error"); }
+  document.body.removeChild(ta);
+}
+
+function toast(msg, tipo) {
+  var el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast " + (tipo || "success") + " show";
+  setTimeout(function() { el.className = "toast " + (tipo || "success"); }, 3000);
+}
+
+// Asignar eventos con addEventListener (compatible con todos los navegadores)
+document.getElementById("answer-box").addEventListener("click",        abrirModal);
+document.getElementById("btn-next").addEventListener("click",          siguiente);
+document.getElementById("btn-back").addEventListener("click",          anterior);
+document.getElementById("modal-close-btn").addEventListener("click",   cerrarModal);
+document.getElementById("modal-cancel-btn").addEventListener("click",  cerrarModal);
+document.getElementById("modal-save-btn").addEventListener("click",    guardarRespuesta);
+document.getElementById("btn-restart").addEventListener("click",       reiniciar);
+document.getElementById("btn-copy").addEventListener("click",          copiarTexto);
+
+document.getElementById("modal").addEventListener("click", function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+render();
+</script>
+</body>
+</html>
